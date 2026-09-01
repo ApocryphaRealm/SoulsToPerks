@@ -38,9 +38,10 @@ namespace SoulsToPerks
 			auto* player = RE::PlayerCharacter::GetSingleton();
 			if (!ui || ui->GameIsPaused() || !player || !player->Is3DLoaded())
 			{
+				// Paused (a menu is up) or no player yet: keep the last real readout rather
+				// than zeroing it - the settings page and message box read these values.
 				std::scoped_lock l(g_stateLock);
-				s.converted = g_state.converted;
-				g_state = s;
+				g_state.ticking = true;
 				return;
 			}
 
@@ -114,6 +115,7 @@ namespace SoulsToPerks
 		{
 			std::scoped_lock l(g_stateLock);
 			g_state.converted += static_cast<std::uint64_t>(granted);
+			RefreshState(player, g_state);  // publish now - the tick skips while a menu pauses the game
 			logger::info("converted {} dragon soul(s) into {} perk point(s) (rate {}:1)",
 						 granted * perSoul, granted, perSoul);
 		}

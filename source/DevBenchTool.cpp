@@ -3,6 +3,7 @@
 #include "DevBenchTool.h"
 
 #include "DevBench/DevBenchAPI.h"
+#include "Dragonstone.h"
 #include "Settings.h"
 #include "SoulsToPerks.h"
 #include "utils/Logger.h"
@@ -64,15 +65,59 @@ namespace DevBenchTool
 				a_write(a_sink, std::format(R"({{"ok":{},"op":"reload"}})", ok ? "true" : "false").c_str());
 				return;
 			}
+			if (has("activate"))
+			{
+				// Test drive: open the Dragonstone exchange menu exactly as an activation would.
+				if (auto* tasks = SKSE::GetTaskInterface()) { tasks->AddTask([]() { Dragonstone::OpenExchangeMenu(); }); }
+				a_write(a_sink, R"({"ok":true,"op":"activate"})");
+				return;
+			}
+			if (has("touch"))
+			{
+				// Test drive through the ENGINE path: ActivateRef on the placed reference is what
+				// the player's activate key ends in, and it raises TESActivateEvent for our sink.
+				if (auto* tasks = SKSE::GetTaskInterface())
+				{
+					tasks->AddTask([]() {
+						auto* player = RE::PlayerCharacter::GetSingleton();
+						const auto d = Dragonstone::GetState();
+						auto* form = d.refFormID ? RE::TESForm::LookupByID(d.refFormID) : nullptr;
+						auto* ref = form ? form->AsReference() : nullptr;
+						if (player && ref) { ref->ActivateRef(player, 0, nullptr, 1, false); }
+						else { logger::warn("touch: Dragonstone reference 0x{:08X} is not loaded (stand in its cell first)", d.refFormID); }
+					});
+				}
+				a_write(a_sink, R"({"ok":true,"op":"touch"})");
+				return;
+			}
+			for (std::uint32_t i = 0; i < 4; ++i)
+			{
+				// op=pick:N applies button N of the open exchange menu (0 = 1 point, 1 = 5, 2 = 10, 3 = cancel).
+				if (has(std::format("pick:{}", i).c_str()))
+				{
+					if (auto* tasks = SKSE::GetTaskInterface()) { tasks->AddTask([i]() { Dragonstone::Pick(i); }); }
+					a_write(a_sink, std::format(R"({{"ok":true,"op":"pick","index":{}}})", i).c_str());
+					return;
+				}
+			}
 
-			const auto s = SoulsToPerks::GetState();
+			auto s = SoulsToPerks::GetState();
+			if (auto* player = RE::PlayerCharacter::GetSingleton())
+			{
+				// Live numbers for the driver, whatever the pause state (the tick skips in menus).
+				s.dragonSouls = player->AsActorValueOwner()->GetActorValue(RE::ActorValue::kDragonSouls);
+				s.perkPoints = player->GetGameStatsData().perkCount;
+			}
+			const auto d = Dragonstone::GetState();
 			const std::string json = std::format(
 				"{{\"ok\":true,"
 				"\"settings\":{{\"soulsPerPoint\":{},\"autoConvert\":{},\"logLevel\":{},\"iniPath\":\"{}\"}},"
-				"\"runtime\":{{\"ticking\":{},\"dragonSouls\":{:.1f},\"perkPoints\":{},\"converted\":{}}}}}",
+				"\"runtime\":{{\"ticking\":{},\"dragonSouls\":{:.1f},\"perkPoints\":{},\"converted\":{},"
+				"\"dragonstoneResolved\":{},\"dragonstoneRefId\":\"0x{:08X}\",\"menuOpen\":{},\"activations\":{}}}}}",
 				settings::general::soulsPerPoint, settings::general::autoConvert,
 				settings::debug::logLevel, EscapeJson(settings::GetIniPath()),
-				s.ticking, s.dragonSouls, static_cast<int>(s.perkPoints), s.converted);
+				s.ticking, s.dragonSouls, static_cast<int>(s.perkPoints), s.converted,
+				d.resolved, d.refFormID, d.menuOpen, d.activations);
 			a_write(a_sink, json.c_str());
 		}
 	}
@@ -93,8 +138,10 @@ namespace DevBenchTool
 		constexpr const char* descriptor =
 			"{"
 			"\"description\":\"Souls to Perks live state: settings, dragon souls, perk points and "
-			"lifetime conversions. op=grant adds 5 test souls; op=convert converts one point; "
-			"op=reload re-reads the INI.\","
+			"lifetime conversions, Dragonstone reference. op=grant adds 5 test souls; op=convert converts one "
+			"point; op=activate opens the Dragonstone exchange menu; op=touch activates the placed reference through the engine "
+			"(its cell must be loaded); op=pick:N applies its button N "
+			"(0=1 point, 1=5, 2=10, 3=cancel); op=reload re-reads the INI.\","
 			"\"inputSchema\":{\"type\":\"object\",\"properties\":{\"op\":{\"type\":\"string\"}}},"
 			"\"readOnly\":false"
 			"}";

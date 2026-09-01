@@ -7,6 +7,20 @@ Rule 61: this mod's own history, kept beside the code it describes.
 > number; at `.9` the MINOR rolls. The next number is LAST WORKING + 1; failed/scratch/
 > untested numbers are reused. Numbers come from version-ledger.ps1 + set-version.ps1.
 
+## 1.0.1 - 2026-09-01 - working
+
+### Added
+- The Dragonstone is back as the in-world way to spend souls (design decision 2026-09-01),
+  standing in the High Hrothgar courtyard. Activate it and an exchange menu offers 1, 5 or
+  10 perk points at the configured rate, showing your souls and points; the settings page's
+  Convert button and the automatic mode are unchanged.
+- SoulsToPerks.esl: a two-record light plugin (the Dragonstone activator on the vanilla
+  RuinsDragonStone01 mesh, and its placed reference) plus the structurally required Tamriel /
+  HighHrothgarExterior01 parent overrides, authored by tools/Build-SoulsToPerksEsl.py. No
+  script. The DLL resolves the reference and listens for TESActivateEvent on it.
+- `stp.control` gains op=activate (opens the exchange menu), op=pick:N (applies button N)
+  and reports the Dragonstone's runtime FormID.
+
 ## 1.0.0 - 2026-09-01 - working
 
 ### Added

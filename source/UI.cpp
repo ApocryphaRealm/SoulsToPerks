@@ -4,6 +4,7 @@
 
 #include "SKSEMenuFramework.h"
 
+#include "Dragonstone.h"
 #include "Settings.h"
 #include "SoulsToPerks.h"
 
@@ -129,6 +130,16 @@ namespace UI
 
 			ImGuiMCP::Toggle("Convert automatically", &general::autoConvert);
 			HelpMarker("Whenever you have enough souls, they convert on their own. Off by default - spending souls is your call.");
+
+			const auto d = Dragonstone::GetState();
+			if (d.resolved)
+			{
+				ImGuiMCP::TextWrapped("The Dragonstone stands in the High Hrothgar courtyard - activate it to exchange souls in the world.");
+			}
+			else
+			{
+				ImGuiMCP::TextWrapped("SoulsToPerks.esl is not loaded - the Dragonstone at High Hrothgar cannot exist. Enable it in your mod manager.");
+			}
 		}
 
 		void RenderDebugSection()

@@ -1,6 +1,6 @@
-{
+﻿{
     "name": "soulstoperks",
-    "version-string": "1.0.0",
+    "version-string": "1.0.1",
     "description": "Souls to Perks - spend dragon souls for perk points, from an in-game settings page.",
     "homepage": "https://github.com/ApocryphaRealm/SoulsToPerks",
     "license": "MIT",
