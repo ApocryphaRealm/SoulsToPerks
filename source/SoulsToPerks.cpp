@@ -106,7 +106,11 @@ namespace SoulsToPerks
 			const float cost = static_cast<float>(perSoul);
 			const float have = souls - static_cast<float>(granted) * cost;
 			if (have < cost || stats.perkCount >= 127) { break; }
+#if RUNTIME_LINE == 17
+			avOwner->ModBaseActorValue(RE::ActorValue::kDragonSouls, -cost);
+#else
 			avOwner->ModActorValue(RE::ActorValue::kDragonSouls, -cost);
+#endif
 			stats.perkCount = static_cast<std::int8_t>(stats.perkCount + 1);
 			++granted;
 		}

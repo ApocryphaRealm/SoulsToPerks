@@ -49,10 +49,17 @@ namespace Dragonstone
 
 		struct ExchangeCallback : RE::IMessageBoxCallback
 		{
+#if RUNTIME_LINE == 17
+			void Run(std::uint8_t a_optionIndex) override
+			{
+				Pick(static_cast<std::uint32_t>(a_optionIndex));
+			}
+#else
 			void Run(Message a_optionIndex) override
 			{
 				Pick(static_cast<std::uint32_t>(a_optionIndex));
 			}
+#endif
 		};
 
 		class ActivateSink : public RE::BSTEventSink<RE::TESActivateEvent>
@@ -168,7 +175,11 @@ namespace Dragonstone
 		if (granted <= 0) { note = "Not enough dragon souls."; }
 		else if (static_cast<std::uint32_t>(granted) < wanted) { note = std::format("{} of {} perk points granted - not enough souls for the rest.", granted, wanted); }
 		else { note = std::format("{} perk point{} granted.", granted, granted == 1 ? "" : "s"); }
+#if RUNTIME_LINE == 17
+		RE::SendHUDMessage::ShowHUDMessage(note.c_str(), nullptr, true);
+#else
 		RE::DebugNotification(note.c_str());
+#endif
 		logger::info("exchange menu: button {} ({} points) -> {}", a_index, wanted, note);
 	}
 

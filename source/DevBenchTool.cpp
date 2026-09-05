@@ -46,7 +46,11 @@ namespace DevBenchTool
 					tasks->AddTask([]() {
 						if (auto* player = RE::PlayerCharacter::GetSingleton())
 						{
+							#if RUNTIME_LINE == 17
+							player->AsActorValueOwner()->ModBaseActorValue(RE::ActorValue::kDragonSouls, 5.0F);
+#else
 							player->AsActorValueOwner()->ModActorValue(RE::ActorValue::kDragonSouls, 5.0F);
+#endif
 						}
 					});
 				}
