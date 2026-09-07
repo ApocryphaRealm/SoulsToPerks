@@ -9,11 +9,13 @@
 #include "SoulsToPerks.h"
 
 #include "utils/Logger.h"
+#include "utils/Strings.h"
 #include "utils/Toggle.h"
 
 #include <algorithm>
 #include <functional>
 #include <string>
+#include <vector>
 
 namespace UI
 {
@@ -23,6 +25,8 @@ namespace UI
 		std::string selectedSlider;
 
 		constexpr const char* kLogLevelNames[] = { "Trace", "Debug", "Info", "Warning", "Error", "Critical", "Off" };
+		constexpr const char* kLogLevelKeys[] = { "STP_LogLevel_Trace", "STP_LogLevel_Debug", "STP_LogLevel_Info",
+													"STP_LogLevel_Warning", "STP_LogLevel_Error", "STP_LogLevel_Critical", "STP_LogLevel_Off" };
 		constexpr int kLogLevelCount = 7;
 
 		void OnMainThread(std::function<void()> a_task)
@@ -77,7 +81,7 @@ namespace UI
 		void HelpMarker(const char* a_description)
 		{
 			ImGuiMCP::SameLine();
-			ImGuiMCP::TextDisabled("(?)");
+			ImGuiMCP::TextDisabled("%s", strings::TR("STP_HelpMark", "(?)"));
 			if (ImGuiMCP::IsItemHovered())
 			{
 				ImGuiMCP::SetTooltip("%s", a_description);
@@ -109,36 +113,36 @@ namespace UI
 		{
 			using namespace settings;
 
-			ImGuiMCP::SeparatorText("Souls to perks");
+			ImGuiMCP::SeparatorText(strings::TR("STP_Title", "Souls to perks"));
 
 			const auto s = SoulsToPerks::GetState();
-			ImGuiMCP::Text("Dragon souls: %.0f    Perk points: %d", s.dragonSouls, static_cast<int>(s.perkPoints));
+			ImGuiMCP::Text(strings::TR("STP_SoulsPerksStatus", "Dragon souls: %.0f    Perk points: %d"), s.dragonSouls, static_cast<int>(s.perkPoints));
 
 			float rate = static_cast<float>(general::soulsPerPoint);
-			if (NudgeableSlider("Souls per point", &rate, 1.0F, 10.0F, "%.0f", 1.0F))
+			if (NudgeableSlider(strings::TR("STP_SoulsPerPoint", "Souls per point"), &rate, 1.0F, 10.0F, "%.0f", 1.0F))
 			{
 				general::soulsPerPoint = static_cast<std::uint32_t>(rate + 0.5F);
 			}
-			HelpMarker("How many dragon souls one perk point costs.");
+			HelpMarker(strings::TR("STP_HelpSoulsPerPoint", "How many dragon souls one perk point costs."));
 
-			if (ImGuiMCP::Button("Convert one point"))
+			if (ImGuiMCP::Button(strings::TR("STP_ConvertBtn", "Convert one point")))
 			{
 				SoulsToPerks::RequestConvertOne();
-				statusMessage = "Converting...";
+				statusMessage = strings::TR("STP_StatusConverting", "Converting...");
 			}
-			HelpMarker("Spends the souls and grants one perk point, if you have enough.");
+			HelpMarker(strings::TR("STP_HelpConvert", "Spends the souls and grants one perk point, if you have enough."));
 
-			ImGuiMCP::Toggle("Convert automatically", &general::autoConvert);
-			HelpMarker("Whenever you have enough souls, they convert on their own. Off by default - spending souls is your call.");
+			ImGuiMCP::Toggle(strings::TR("STP_AutoConvert", "Convert automatically"), &general::autoConvert);
+			HelpMarker(strings::TR("STP_HelpAutoConvert", "Whenever you have enough souls, they convert on their own. Off by default - spending souls is your call."));
 
 			const auto d = Dragonstone::GetState();
 			if (d.resolved)
 			{
-				ImGuiMCP::TextWrapped("The Dragonstone stands in the High Hrothgar courtyard - activate it to exchange souls in the world.");
+				ImGuiMCP::TextWrapped("%s", strings::TR("STP_DragonstoneResolved", "The Dragonstone stands in the High Hrothgar courtyard - activate it to exchange souls in the world."));
 			}
 			else
 			{
-				ImGuiMCP::TextWrapped("SoulsToPerks.esl is not loaded - the Dragonstone at High Hrothgar cannot exist. Enable it in your mod manager.");
+				ImGuiMCP::TextWrapped("%s", strings::TR("STP_EslNotLoaded", "SoulsToPerks.esl is not loaded - the Dragonstone at High Hrothgar cannot exist. Enable it in your mod manager."));
 			}
 		}
 
@@ -146,54 +150,66 @@ namespace UI
 		{
 			using namespace settings;
 
-			ImGuiMCP::SeparatorText("Debug");
+			ImGuiMCP::SeparatorText(strings::TR("STP_Debug", "Debug"));
 
 			int level = static_cast<int>(debug::logLevel);
 			level = std::clamp(level, 0, kLogLevelCount - 1);
-			if (ImGuiMCP::Combo("Log level", &level, kLogLevelNames, kLogLevelCount))
+			// Rebuilt from TR'd entries every frame (plan 2.2); labelStore owns the translated
+			// bytes for this call so the const char* pointers handed to Combo stay valid.
+			std::vector<std::string> logLevelLabelStore;
+			logLevelLabelStore.reserve(kLogLevelCount);
+			for (int i = 0; i < kLogLevelCount; ++i)
+			{
+				logLevelLabelStore.push_back(strings::TR(kLogLevelKeys[i], kLogLevelNames[i]));
+			}
+			std::vector<const char*> logLevelLabels;
+			logLevelLabels.reserve(logLevelLabelStore.size());
+			for (const auto& s : logLevelLabelStore) { logLevelLabels.push_back(s.c_str()); }
+			if (ImGuiMCP::Combo(strings::TR("STP_LogLevel", "Log level"), &level, logLevelLabels.data(), kLogLevelCount))
 			{
 				debug::logLevel = static_cast<std::uint32_t>(level);
 				ApplyLogLevel();
 			}
-			HelpMarker("Applies immediately. The log is at Documents\\My Games\\Skyrim Special Edition\\SKSE\\SoulsToPerks.log.");
+			HelpMarker(strings::TR("STP_HelpLogLevel", "Applies immediately. The log is at Documents\\My Games\\Skyrim Special Edition\\SKSE\\SoulsToPerks.log."));
 		}
 
 		void RenderButtons()
 		{
 			ImGuiMCP::SeparatorText("");
 
-			if (ImGuiMCP::Button("Save"))
+			if (ImGuiMCP::Button(strings::TR("STP_SaveBtn", "Save")))
 			{
-				statusMessage = "Saving...";
+				statusMessage = strings::TR("STP_StatusSaving", "Saving...");
 				OnMainThread([]() {
-					statusMessage = settings::Save() ? "Settings saved." : "Could not write the INI. See the log for why.";
+					statusMessage = settings::Save() ? strings::TR("STP_StatusSaved", "Settings saved.")
+													   : strings::TR("STP_StatusSaveFail", "Could not write the INI. See the log for why.");
 				});
 			}
-			HelpMarker("Writes every setting on this page to the plugin's INI so it survives a restart.");
+			HelpMarker(strings::TR("STP_HelpSave", "Writes every setting on this page to the plugin's INI so it survives a restart."));
 
 			ImGuiMCP::SameLine();
 
-			if (ImGuiMCP::Button("Reload from INI"))
+			if (ImGuiMCP::Button(strings::TR("STP_ReloadBtn", "Reload from INI")))
 			{
-				statusMessage = "Reloading...";
+				statusMessage = strings::TR("STP_StatusReloading", "Reloading...");
 				OnMainThread([]() {
-					statusMessage = settings::Reload() ? "Settings reloaded from the INI."
-													   : "Could not read the INI. See the log for why.";
+					statusMessage = settings::Reload() ? strings::TR("STP_StatusReloaded", "Settings reloaded from the INI.")
+													   : strings::TR("STP_StatusReloadFail", "Could not read the INI. See the log for why.");
 				});
 			}
-			HelpMarker("Throws away any change made here since the last save and re-reads the INI from disk.");
+			HelpMarker(strings::TR("STP_HelpReload", "Throws away any change made here since the last save and re-reads the INI from disk."));
 
 			ImGuiMCP::SameLine();
 
-			if (ImGuiMCP::Button("Restore defaults"))
+			if (ImGuiMCP::Button(strings::TR("STP_RestoreBtn", "Restore defaults")))
 			{
 				OnMainThread([]() {
 					settings::RestoreDefaults();
 					logger::debug("Restored default settings");
 				});
-				statusMessage = "Defaults restored. Press Save to keep them.";
+				statusMessage = strings::TR("STP_StatusRestored", "Defaults restored. Press Save to keep them.");
 			}
-			HelpMarker("Puts every setting back to its fresh-install value. Nothing is written until you press Save.");
+			HelpMarker(strings::TR("STP_HelpRestore", "Puts every setting back to its fresh-install value. Nothing is written until you press Save."));
 
 			if (!statusMessage.empty())
 			{
@@ -227,7 +243,9 @@ namespace UI
 
 	void __stdcall SettingsPanel::Render()
 	{
-		ImGuiMCP::TextWrapped("Changes apply as soon as you make them. Press Save to keep them for the next time you play.");
+		strings::Tick();
+
+		ImGuiMCP::TextWrapped("%s", strings::TR("STP_Intro", "Changes apply as soon as you make them. Press Save to keep them for the next time you play."));
 		ImGuiMCP::Spacing();
 
 		ImGuiMCP::PushItemWidth(260.0F);

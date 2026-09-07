@@ -7,6 +7,7 @@
 #include "Settings.h"
 #include "SoulsToPerks.h"
 #include "utils/Logger.h"
+#include "utils/Strings.h"
 
 #include <format>
 #include <string>
@@ -67,6 +68,11 @@ namespace DevBenchTool
 			{
 				const bool ok = settings::Reload();
 				a_write(a_sink, std::format(R"({{"ok":{},"op":"reload"}})", ok ? "true" : "false").c_str());
+				return;
+			}
+			if (has("strings"))
+			{
+				a_write(a_sink, std::format(R"({{"ok":true,"op":"strings","strings":{}}})", strings::StatusJson()).c_str());
 				return;
 			}
 			if (has("activate"))
@@ -145,7 +151,7 @@ namespace DevBenchTool
 			"lifetime conversions, Dragonstone reference. op=grant adds 5 test souls; op=convert converts one "
 			"point; op=activate opens the Dragonstone exchange menu; op=touch activates the placed reference through the engine "
 			"(its cell must be loaded); op=pick:N applies its button N "
-			"(0=1 point, 1=5, 2=10, 3=cancel); op=reload re-reads the INI.\","
+			"(0=1 point, 1=5, 2=10, 3=cancel); op=reload re-reads the INI; op=strings reports the active language, source and loaded translation count.\","
 			"\"inputSchema\":{\"type\":\"object\",\"properties\":{\"op\":{\"type\":\"string\"}}},"
 			"\"readOnly\":false"
 			"}";
