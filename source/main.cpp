@@ -1,4 +1,4 @@
-// Souls to Perks - own code, MIT (2026-09-01). Dragon souls and perk points are both
+// Souls to Perks - own code, GPL-3.0-or-later (2026-09-01). Dragon souls and perk points are both
 // game-saved values (an actor value and the perkCount byte), so a conversion is a plain
 // main-thread transfer - no hooks, no serialization. The Dragonstone (a placed activator in
 // the tiny SoulsToPerks.esl) is the in-world way in; the settings page is the other.
