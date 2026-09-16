@@ -142,7 +142,7 @@ namespace UI
 			}
 			else
 			{
-				ImGuiMCP::TextWrapped("%s", strings::TR("STP_EslNotLoaded", "SoulsToPerks.esl is not loaded - the Dragonstone at High Hrothgar cannot exist. Enable it in your mod manager."));
+				ImGuiMCP::TextWrapped("%s", strings::TR("STP_EslNotLoaded", "SoulsToPerks.esp is not loaded - the Dragonstone at High Hrothgar cannot exist. Enable it in your mod manager."));
 			}
 		}
 

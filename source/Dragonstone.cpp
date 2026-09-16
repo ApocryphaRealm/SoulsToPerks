@@ -31,13 +31,13 @@ namespace Dragonstone
 {
 	namespace
 	{
-		// The contract with SoulsToPerks.esl (tools/Build-SoulsToPerksEsl.py):
+		// The contract with SoulsToPerks.esp (tools/Build-SoulsToPerksEsl.py):
 		// 0x800 ACTI (the Dragonstone), 0x801 REFR (its placed reference at High Hrothgar).
 		// The BASE form is what gets resolved: the placed reference is a temporary exterior
 		// ref, and temporary refs only enter the form table while their cell is loaded, so a
 		// LookupForm on 0x801 at kDataLoaded finds nothing. Matching the base object also
 		// means any Dragonstone placed from this activator works, not just ours.
-		constexpr const char* kPluginFileName = "SoulsToPerks.esl";
+		constexpr const char* kPluginFileName = "SoulsToPerks.esp";
 		constexpr RE::FormID kActivatorLocalFormID = 0x800;
 		constexpr RE::FormID kRefLocalFormID = 0x801;
 		constexpr std::uint32_t kPointsPerButton[] = { 1, 5, 10 };
