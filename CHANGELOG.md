@@ -7,6 +7,11 @@ Rule 61: this mod's own history, kept beside the code it describes.
 > number; at `.9` the MINOR rolls. The next number is LAST WORKING + 1; failed/scratch/
 > untested numbers are reused. Numbers come from version-ledger.ps1 + set-version.ps1.
 
+## 1.0.5 - 2026-09-16 - untested
+
+### Changed
+- The plugin is now SoulsToPerks.esp, a light ESPFE. It also carried the ESM flag, which pinned it to the top of the load order regardless of extension; that is cleared. Saves referencing the old .esl will not find its records.
+
 ## 1.0.3 - 2026-09-07 - working
 
 ### Added
