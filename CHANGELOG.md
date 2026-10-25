@@ -12,10 +12,13 @@ Rule 61: this mod's own history, kept beside the code it describes.
 ### Fixed
 - Dragon souls and perk points are read only once the player is placed in a cell, so the watcher, the Convert call, the Dragonstone menu and the DevBench readout never ask the player's actor values at the main menu, where the player exists with no character loaded.
 - The Souls per point slider is a precise slider: a keyboard or D-pad nudge moves it by exactly one (rule 68; the package gate requires it from this update).
-- The Tamriel worldspace record the plugin carries is now a full copy of the vanilla one. 1.0.6 left out the worldspace's max-height data (MHDT) that Update.esm and the DLC masters carry, which the plugin's copy could blank whenever it won. Only the large-reference lists (each plugin carries its own; this one places none) and Skyrim.esm's own cell offset table are left out. The High Hrothgar courtyard cell record was already a complete copy of Update.esm's and is unchanged.
+- The plugin no longer changes any vanilla record. Up to 1.0.6 it placed the Dragonstone through the plugin, which forced it to carry copies of the High Hrothgar courtyard cell and the Tamriel worldspace records (and the worldspace copy left out its max-height data); a mod that edits either could be undone by it depending on load order. SoulsToPerks.esp now holds one record, the Dragonstone activator, and overrides no cell, worldspace or placed reference.
 
 ### Changed
-- The plugin generator now writes SoulsToPerks.esp with the light flag only, the shape 1.0.5 shipped after a separate header conversion, so the source reproduces the released plugin directly.
+- The Dragonstone is placed in the High Hrothgar courtyard by the DLL when that cell loads, at the same spot, facing and size as before. The game keeps it in the save like any object placed at runtime, so later visits and reloads find it and place nothing new; a second stone, if one ever turns up, is removed. A save made with 1.0.6 simply gets the new stone on the next visit (the old placed reference left with the plugin record it came from).
+- The message-box call no longer carries a VR address; the mod does not support VR.
+- The DevBench readout reports the courtyard stone: its reference, how many stand there, how many this session placed and how many duplicates it removed.
+- The plugin generator writes the one-record SoulsToPerks.esp with the light flag only.
 
 ## 1.0.6 - 2026-09-18 - untested
 

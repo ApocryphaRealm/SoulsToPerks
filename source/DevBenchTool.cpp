@@ -123,11 +123,12 @@ namespace DevBenchTool
 				"{{\"ok\":true,"
 				"\"settings\":{{\"soulsPerPoint\":{},\"autoConvert\":{},\"logLevel\":{},\"iniPath\":\"{}\"}},"
 				"\"runtime\":{{\"ticking\":{},\"dragonSouls\":{:.1f},\"perkPoints\":{},\"converted\":{},"
-				"\"dragonstoneResolved\":{},\"dragonstoneRefId\":\"0x{:08X}\",\"menuOpen\":{},\"activations\":{}}}}}",
+				"\"dragonstoneResolved\":{},\"dragonstoneRefId\":\"0x{:08X}\",\"courtyardStones\":{},"
+				"\"placedThisSession\":{},\"duplicatesRemoved\":{},\"menuOpen\":{},\"activations\":{}}}}}",
 				settings::general::soulsPerPoint, settings::general::autoConvert,
 				settings::debug::logLevel, EscapeJson(settings::GetIniPath()),
 				s.ticking, s.dragonSouls, static_cast<int>(s.perkPoints), s.converted,
-				d.resolved, d.refFormID, d.menuOpen, d.activations);
+				d.resolved, d.refFormID, d.courtyardCount, d.placements, d.duplicatesRemoved, d.menuOpen, d.activations);
 			a_write(a_sink, json.c_str());
 		}
 	}
@@ -148,7 +149,8 @@ namespace DevBenchTool
 		constexpr const char* descriptor =
 			"{"
 			"\"description\":\"Souls to Perks live state: settings, dragon souls, perk points and "
-			"lifetime conversions, Dragonstone reference. op=grant adds 5 test souls; op=convert converts one "
+			"lifetime conversions, the courtyard Dragonstone (its reference, how many stand there after the last "
+			"check, how many this session placed and how many duplicates it removed). op=grant adds 5 test souls; op=convert converts one "
 			"point; op=activate opens the Dragonstone exchange menu; op=touch activates the placed reference through the engine "
 			"(its cell must be loaded); op=pick:N applies its button N "
 			"(0=1 point, 1=5, 2=10, 3=cancel); op=reload re-reads the INI; op=strings reports the active language, source and loaded translation count.\","

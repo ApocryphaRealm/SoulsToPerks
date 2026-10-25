@@ -1,7 +1,8 @@
 // Souls to Perks - own code, GPL-3.0-or-later (2026-09-01). Dragon souls and perk points are both
 // game-saved values (an actor value and the perkCount byte), so a conversion is a plain
-// main-thread transfer - no hooks, no serialization. The Dragonstone (a placed activator in
-// the tiny SoulsToPerks.esp) is the in-world way in; the settings page is the other.
+// main-thread transfer - no hooks, no serialization. The Dragonstone (an activator record in
+// the tiny SoulsToPerks.esp, placed in the High Hrothgar courtyard at runtime) is the in-world
+// way in; the settings page is the other.
 #include "PCH.h"
 
 #include "DevBenchTool.h"
@@ -29,6 +30,10 @@ namespace
 			SoulsToPerks::Install();
 			Dragonstone::Install();
 			DevBenchTool::Init(true);
+			break;
+		case SKSE::MessagingInterface::kPostLoadGame:
+		case SKSE::MessagingInterface::kNewGame:
+			Dragonstone::OnGameLoaded();
 			break;
 		default:
 			break;
