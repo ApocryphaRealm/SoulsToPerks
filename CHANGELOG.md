@@ -7,7 +7,7 @@ Rule 61: this mod's own history, kept beside the code it describes.
 > number; at `.9` the MINOR rolls. The next number is LAST WORKING + 1; failed/scratch/
 > untested numbers are reused. Numbers come from version-ledger.ps1 + set-version.ps1.
 
-## 1.0.7 - 2026-10-25 - untested
+## 1.0.7 - 2026-10-25 - working
 
 ### Fixed
 - Dragon souls and perk points are read only once the player is placed in a cell, so the watcher, the Convert call, the Dragonstone menu and the DevBench readout never ask the player's actor values at the main menu, where the player exists with no character loaded.
