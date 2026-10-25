@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 r"""
-Build-SoulsToPerksEsl.py - authors SoulsToPerks.esl, the placement carrier for Souls to Perks.
+Build-SoulsToPerksEsl.py - authors SoulsToPerks.esp (an ESPFE), the placement carrier for Souls to Perks.
 
 Two NEW records, one master (Skyrim.esm), light-flagged:
     0x800  ACTI  STP_Dragonstone      FULL "Dragonstone", the vanilla RuinsDragonStone01.nif mesh
@@ -20,9 +20,23 @@ Skyrim.esm's own markers in that courtyard (HighHrothgarExteriorMeditationPatrol
 55054,-36007,23461 and the two exterior doors at x=52640), not guessed.
 
 Parent overrides are rebuilt from the live masters at build time (Update.esm if it overrides the
-record, else Skyrim.esm) so they always carry authoritative vanilla data.
+record, else Skyrim.esm) so they always carry authoritative vanilla data. Both are FULL copies of
+the winning vanilla record (the page-claims audit, 2026-10-25): until 1.0.7 the WRLD copy kept a
+hand-picked list of subrecords and so dropped MHDT, the worldspace's max-height data that
+Update.esm and every DLC master carry, which our override would have blanked whenever it won.
+Now only two kinds of subrecord are left out, both on purpose:
+    RNAM  large-reference lists. Each plugin carries only its own (Dragonborn.esm, the vanilla
+          winner, has 368 bytes of them against Skyrim.esm's 1.35 MB), so the game combines
+          them across plugins; this plugin places no large reference and carries none.
+    OFST  Skyrim.esm's cell offset table - file positions inside Skyrim.esm, meaningless here.
+FULL is written as plain text ("Skyrim") because the master's is a localised string id and this
+plugin is not localised.
 
-Usage:  python Build-SoulsToPerksEsl.py [out.esl] [Data folder]
+The plugin ships as SoulsToPerks.esp carrying only the light flag (ESPFE), so it sorts among the
+ordinary plugins (1.0.5 renamed it and cleared the ESM flag with make-espfe.py; the generator now
+writes that header itself).
+
+Usage:  python Build-SoulsToPerksEsl.py [out.esp] [Data folder]
 """
 import struct, zlib, sys, os
 
@@ -51,8 +65,7 @@ CELL_FID = 0x000096CC     # HighHrothgarExterior01, grid (13,-9)
 BLOCK_LBL = bytes.fromhex('ffff0000')    # exterior block    (Y=-1, X=0)
 SUBBLK_LBL = bytes.fromhex('feff0100')   # exterior subblock (Y=-2, X=1)
 
-WRLD_KEEP = ['EDID', 'FULL', 'CNAM', 'NAM2', 'NAM3', 'NAM4', 'DNAM', 'MNAM', 'ONAM',
-             'NAMA', 'DATA', 'NAM0', 'NAM9', 'ZNAM', 'TNAM', 'UNAM']
+WRLD_DROP = {'RNAM', 'OFST'}   # see the docstring: every other subrecord is carried verbatim
 
 
 def sub(sig, data):
@@ -127,10 +140,16 @@ def build(data_dir):
     if missing:
         raise SystemExit('Could not find %s in the masters' % missing)
 
-    wsubs = dict(parse_subs(src[WRLD_FID][1]))
+    wsubs = parse_subs(src[WRLD_FID][1])
+    for need in ('MHDT', 'CNAM', 'DNAM', 'MNAM'):
+        assert need in dict(wsubs), 'Tamriel from %s has no %s' % (src[WRLD_FID][2], need)
     wrld_body = b''
-    for sig in WRLD_KEEP:
-        val = b'Skyrim\x00' if sig == 'FULL' else wsubs[sig]   # FULL is localised in the master
+    for sig, val in wsubs:
+        if sig in WRLD_DROP:
+            continue
+        if sig == 'FULL':
+            assert len(val) == 4, 'Tamriel FULL is no longer a localised string id'
+            val = b'Skyrim\x00'                                     # FULL is localised in the master
         wrld_body += sub(sig, val)
 
     cell_flags, cell_raw, cell_from = src[CELL_FID]
@@ -167,14 +186,18 @@ def build(data_dir):
                  + sub('CNAM', b'ApocryphaRealm\x00')
                  + sub('SNAM', b'Souls to Perks - Dragonstone placement. All behaviour is in SoulsToPerks.dll.\x00')
                  + sub('MAST', b'Skyrim.esm\x00') + sub('DATA', b'\x00' * 8))
-    tes4 = rec('TES4', 0, tes4_body, flags=0x00000201)   # ESM | Light
+    tes4 = rec('TES4', 0, tes4_body, flags=0x00000200)   # Light only (ESPFE) - no ESM flag
     return tes4 + agroup + wgroup, dropped, cell_from
 
 
 if __name__ == '__main__':
     here = os.path.dirname(os.path.abspath(__file__))
-    out = sys.argv[1] if len(sys.argv) > 1 else os.path.join(here, '..', 'dist', 'SoulsToPerks.esl')
-    data_dir = sys.argv[2] if len(sys.argv) > 2 else r'C:\Modlists\Apostasy\Stock Game\Data'
+    out = sys.argv[1] if len(sys.argv) > 1 else os.path.join(here, '..', 'dist', 'SoulsToPerks.esp')
+    # Discovered, not hard-coded (rule 4): SKYRIM_DATA, else the first MO2 Stock Game found.
+    candidates = [os.environ.get('SKYRIM_DATA', ''), r'D:\Modlists\Njordlinger\Stock Game\Data',
+                  r'C:\Modlists\Apostasy\Stock Game\Data']
+    data_dir = sys.argv[2] if len(sys.argv) > 2 else next(
+        (c for c in candidates if c and os.path.isfile(os.path.join(c, 'Skyrim.esm'))), candidates[1])
     blob, dropped, cell_from = build(data_dir)
     os.makedirs(os.path.dirname(os.path.abspath(out)), exist_ok=True)
     open(out, 'wb').write(blob)

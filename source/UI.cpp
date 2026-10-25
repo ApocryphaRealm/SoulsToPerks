@@ -5,6 +5,7 @@
 #include "SKSEMenuFramework.h"
 
 #include "Dragonstone.h"
+#include "PreciseSlider.h"
 #include "Settings.h"
 #include "SoulsToPerks.h"
 
@@ -48,6 +49,8 @@ namespace UI
 				"igSeparatorText",
 				"igCombo_Str_arr",
 				"igSliderFloat",
+				"igIsKeyDown_Nil",       // PreciseSlider.h
+				"igIsMouseDown_Nil",     // PreciseSlider.h
 				"igIsKeyPressed_Bool",
 				"igIsItemClicked",
 				"igIsItemActive",
@@ -91,7 +94,8 @@ namespace UI
 		bool NudgeableSlider(const char* a_label, float* a_value, float a_min, float a_max,
 							 const char* a_format, float a_step)
 		{
-			bool changed = ImGuiMCP::SliderFloat(a_label, a_value, a_min, a_max, a_format);
+			// rule 68: precise::SliderFloat holds ImGui's own keyboard / D-pad nudge to one unit of the shown digit
+			bool changed = precise::SliderFloat(a_label, a_value, a_min, a_max, a_format);
 			if (ImGuiMCP::IsItemClicked() || ImGuiMCP::IsItemActive()) { selectedSlider = a_label; }
 			if (selectedSlider == a_label)
 			{

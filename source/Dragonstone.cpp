@@ -130,7 +130,7 @@ namespace Dragonstone
 	void OpenExchangeMenu()
 	{
 		auto* player = RE::PlayerCharacter::GetSingleton();
-		if (!player) { return; }
+		if (!player || !player->GetParentCell()) { return; }
 		if (g_menuOpen.load(std::memory_order_acquire)) { return; }
 
 		const float souls = player->AsActorValueOwner()->GetActorValue(RE::ActorValue::kDragonSouls);

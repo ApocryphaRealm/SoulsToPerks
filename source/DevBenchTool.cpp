@@ -112,7 +112,7 @@ namespace DevBenchTool
 			}
 
 			auto s = SoulsToPerks::GetState();
-			if (auto* player = RE::PlayerCharacter::GetSingleton())
+			if (auto* player = RE::PlayerCharacter::GetSingleton(); player && player->GetParentCell())
 			{
 				// Live numbers for the driver, whatever the pause state (the tick skips in menus).
 				s.dragonSouls = player->AsActorValueOwner()->GetActorValue(RE::ActorValue::kDragonSouls);

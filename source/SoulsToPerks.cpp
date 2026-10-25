@@ -36,7 +36,7 @@ namespace SoulsToPerks
 
 			auto* ui = RE::UI::GetSingleton();
 			auto* player = RE::PlayerCharacter::GetSingleton();
-			if (!ui || ui->GameIsPaused() || !player || !player->Is3DLoaded())
+			if (!ui || ui->GameIsPaused() || !player || !player->GetParentCell() || !player->Is3DLoaded())
 			{
 				// Paused (a menu is up) or no player yet: keep the last real readout rather
 				// than zeroing it - the settings page and message box read these values.
@@ -93,7 +93,8 @@ namespace SoulsToPerks
 	int Convert(int a_points)
 	{
 		auto* player = RE::PlayerCharacter::GetSingleton();
-		if (!player || a_points <= 0) { return 0; }
+		// the player singleton exists at the main menu with no character placed; read values only once he is in a cell
+		if (!player || !player->GetParentCell() || a_points <= 0) { return 0; }
 
 		auto* avOwner = player->AsActorValueOwner();
 		const float souls = avOwner->GetActorValue(RE::ActorValue::kDragonSouls);

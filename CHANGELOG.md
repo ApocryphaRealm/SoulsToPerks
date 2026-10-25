@@ -7,6 +7,16 @@ Rule 61: this mod's own history, kept beside the code it describes.
 > number; at `.9` the MINOR rolls. The next number is LAST WORKING + 1; failed/scratch/
 > untested numbers are reused. Numbers come from version-ledger.ps1 + set-version.ps1.
 
+## 1.0.7 - 2026-10-25 - untested
+
+### Fixed
+- Dragon souls and perk points are read only once the player is placed in a cell, so the watcher, the Convert call, the Dragonstone menu and the DevBench readout never ask the player's actor values at the main menu, where the player exists with no character loaded.
+- The Souls per point slider is a precise slider: a keyboard or D-pad nudge moves it by exactly one (rule 68; the package gate requires it from this update).
+- The Tamriel worldspace record the plugin carries is now a full copy of the vanilla one. 1.0.6 left out the worldspace's max-height data (MHDT) that Update.esm and the DLC masters carry, which the plugin's copy could blank whenever it won. Only the large-reference lists (each plugin carries its own; this one places none) and Skyrim.esm's own cell offset table are left out. The High Hrothgar courtyard cell record was already a complete copy of Update.esm's and is unchanged.
+
+### Changed
+- The plugin generator now writes SoulsToPerks.esp with the light flag only, the shape 1.0.5 shipped after a separate header conversion, so the source reproduces the released plugin directly.
+
 ## 1.0.6 - 2026-09-18 - untested
 
 ### Changed
