@@ -7,9 +7,10 @@ Rule 61: this mod's own history, kept beside the code it describes.
 > number; at `.9` the MINOR rolls. The next number is LAST WORKING + 1; failed/scratch/
 > untested numbers are reused. Numbers come from version-ledger.ps1 + set-version.ps1.
 
-## 1.0.7 - 2026-10-25 - working
+## 1.0.7 - 2026-10-27 - untested
 
 ### Fixed
+- The log ships at info (uLogLevel=2) instead of trace, in the INI and as the compiled default, so a normal game writes a short log; raise uLogLevel to 0 when a bug report needs every line.
 - Dragon souls and perk points are read only once the player is placed in a cell, so the watcher, the Convert call, the Dragonstone menu and the DevBench readout never ask the player's actor values at the main menu, where the player exists with no character loaded.
 - The Souls per point slider is a precise slider: a keyboard or D-pad nudge moves it by exactly one (rule 68; the package gate requires it from this update).
 - The plugin no longer changes any vanilla record. Up to 1.0.6 it placed the Dragonstone through the plugin, which forced it to carry copies of the High Hrothgar courtyard cell and the Tamriel worldspace records (and the worldspace copy left out its max-height data); a mod that edits either could be undone by it depending on load order. SoulsToPerks.esp now holds one record, the Dragonstone activator, and overrides no cell, worldspace or placed reference.
